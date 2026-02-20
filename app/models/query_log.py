@@ -18,7 +18,7 @@ annotations, but the concept is identical.
 """
 
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float
+from sqlalchemy import Column, Integer, String, Text, DateTime, Float, JSON
 from app.database import Base
 
 
@@ -38,8 +38,8 @@ class QueryLog(Base):
     # The AI-generated answer
     answer = Column(Text, nullable=True)
 
-    # Which documents were used as context (stored as comma-separated IDs for now)
-    source_documents = Column(Text, nullable=True)
+    # Which documents were used as context (stored as structured JSON)
+    source_documents = Column(JSON, nullable=True)
 
     # How long the query took (in seconds)
     response_time = Column(Float, nullable=True)

@@ -10,6 +10,8 @@ you only change this one file.
 """
 
 import google.generativeai as genai
+from google.api_core.exceptions import GoogleAPIError
+from fastapi import HTTPException
 from app.config import settings
 
 
@@ -45,8 +47,10 @@ class GeminiService:
         try:
             response = self.model.generate_content(prompt)
             return response.text
-        except Exception as e:
-            return f"Error communicating with Gemini: {str(e)}"
+        except GoogleAPIError as e:
+            raise HTTPException(status_code=502, detail=f"Gemini API error: {e}")
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"Invalid request: {e}")
 
     def generate_with_context(self, question: str, context: str) -> str:
         """
