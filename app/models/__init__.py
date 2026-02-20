@@ -7,5 +7,6 @@ instead of:
 """
 
 from app.models.query_log import QueryLog
+from app.models.document import Document, DocumentChunk
 
-__all__ = ["QueryLog"]
+__all__ = ["QueryLog", "Document", "DocumentChunk"]
