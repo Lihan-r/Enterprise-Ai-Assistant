@@ -2,9 +2,9 @@ services:
   db:
     image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: enterprise_assistant
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-enterprise_assistant}
     ports:
       - "5432:5432"
     volumes:
@@ -23,7 +23,7 @@ services:
       - .env
     environment:
       # Override DATABASE_URL to point at the db service instead of localhost
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/enterprise_assistant
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-enterprise_assistant}
     volumes:
       - ./documents:/app/documents
     depends_on:

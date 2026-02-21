@@ -20,8 +20,8 @@ class Settings(BaseSettings):
     app_version: str = "1.0.0"
     debug: bool = False
 
-    # Database
-    database_url: str = "postgresql://postgres:password@localhost:5432/enterprise_assistant"
+    # Database — no default, so the app fails fast if DATABASE_URL is not set
+    database_url: str
 
     # Gemini — no default, so the app fails fast if the key is missing
     gemini_api_key: str
