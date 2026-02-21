@@ -18,6 +18,7 @@
       --text-muted: #8b90b0;
       --success: #4caf7d;
       --danger: #e05c5c;
+      --danger-hover: #c94444;
       --radius: 12px;
     }
 
@@ -40,23 +41,201 @@
       overflow: hidden;
     }
 
-    #sidebar-header {
-      padding: 20px;
+    .sidebar-section-header {
+      padding: 16px 16px 12px;
       border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    #sidebar-header h2 {
-      font-size: 13px;
-      font-weight: 600;
+    .sidebar-section-header h2 {
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       color: var(--text-muted);
+    }
+
+    .sidebar-section-header .count-badge {
+      font-size: 10px;
+      background: var(--surface2);
+      color: var(--text-muted);
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    /* ── Documents panel ── */
+    #docs-panel {
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid var(--border);
+      max-height: 45%;
+      overflow: hidden;
+    }
+
+    #drop-zone {
+      margin: 10px 12px;
+      padding: 18px 12px;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    #drop-zone:hover, #drop-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(108, 99, 255, 0.06);
+    }
+
+    #drop-zone .drop-icon {
+      font-size: 22px;
+      margin-bottom: 4px;
+      display: block;
+      opacity: 0.7;
+    }
+
+    #drop-zone .drop-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    #drop-zone .drop-text strong {
+      color: var(--accent);
+    }
+
+    #drop-zone .drop-hint {
+      font-size: 10px;
+      color: var(--text-muted);
+      opacity: 0.6;
+      margin-top: 4px;
+      display: block;
+    }
+
+    #file-input { display: none; }
+
+    /* Upload progress */
+    #upload-status {
+      display: none;
+      margin: 0 12px 10px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    #upload-status.visible { display: flex; align-items: center; gap: 8px; }
+    #upload-status.error { border: 1px solid rgba(224, 92, 92, 0.35); color: #f08080; }
+    #upload-status.success { border: 1px solid rgba(76, 175, 125, 0.35); color: var(--success); }
+
+    #upload-status .upload-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    /* Document list */
+    #doc-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 8px 8px;
+    }
+
+    #doc-list::-webkit-scrollbar { width: 4px; }
+    #doc-list::-webkit-scrollbar-track { background: transparent; }
+    #doc-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+
+    .doc-item:hover { background: var(--surface2); }
+
+    .doc-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+      text-transform: uppercase;
+    }
+
+    .doc-icon.pdf { background: rgba(224, 92, 92, 0.18); color: var(--danger); }
+    .doc-icon.txt { background: rgba(76, 175, 125, 0.18); color: var(--success); }
+
+    .doc-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .doc-info .doc-name {
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .doc-info .doc-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .doc-delete {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      font-size: 14px;
+      line-height: 1;
+      transition: all 0.15s;
+      opacity: 0;
+      flex-shrink: 0;
+    }
+
+    .doc-item:hover .doc-delete { opacity: 1; }
+    .doc-delete:hover { color: var(--danger); background: rgba(224, 92, 92, 0.12); }
+
+    #doc-empty {
+      padding: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      opacity: 0.7;
+    }
+
+    /* ── History panel ── */
+    #history-panel {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
     }
 
     #history-list {
       flex: 1;
       overflow-y: auto;
-      padding: 8px;
+      padding: 4px 8px 8px;
     }
 
     #history-list::-webkit-scrollbar { width: 4px; }
@@ -88,10 +267,11 @@
     }
 
     #history-empty {
-      padding: 20px 12px;
-      font-size: 13px;
+      padding: 12px;
+      font-size: 12px;
       color: var(--text-muted);
       text-align: center;
+      opacity: 0.7;
     }
 
     /* ── Main ── */
@@ -385,32 +565,127 @@
     }
 
     #topk-input:focus { border-color: var(--accent); }
+
+    /* ── Delete confirmation overlay ── */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 0.15s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .confirm-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 340px;
+      text-align: center;
+    }
+
+    .confirm-box p {
+      font-size: 14px;
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+
+    .confirm-box .confirm-name {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .confirm-btns {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .confirm-btns button {
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: all 0.15s;
+    }
+
+    .btn-cancel {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .btn-cancel:hover { background: var(--border); }
+
+    .btn-delete {
+      background: var(--danger);
+      color: #fff;
+      border-color: var(--danger);
+    }
+
+    .btn-delete:hover { background: var(--danger-hover); }
   </style>
 </head>
 <body>
 
-<!-- Sidebar: query history -->
+<!-- Sidebar -->
 <aside id="sidebar">
-  <div id="sidebar-header">
-    <h2>Query History</h2>
+  <!-- Documents section -->
+  <div id="docs-panel">
+    <div class="sidebar-section-header">
+      <h2>Documents</h2>
+      <span id="doc-count" class="count-badge">0</span>
+    </div>
+
+    <div id="drop-zone">
+      <span class="drop-icon">&#8682;</span>
+      <div class="drop-text">
+        Drop a file or <strong>browse</strong>
+      </div>
+      <span class="drop-hint">.pdf or .txt</span>
+    </div>
+    <input id="file-input" type="file" accept=".pdf,.txt" />
+
+    <div id="upload-status">
+      <div class="upload-spinner"></div>
+      <span id="upload-msg">Uploading...</span>
+    </div>
+
+    <div id="doc-list">
+      <div id="doc-empty">No documents uploaded</div>
+    </div>
   </div>
-  <div id="history-list">
-    <div id="history-empty">No queries yet</div>
+
+  <!-- History section -->
+  <div id="history-panel">
+    <div class="sidebar-section-header">
+      <h2>Query History</h2>
+    </div>
+    <div id="history-list">
+      <div id="history-empty">No queries yet</div>
+    </div>
   </div>
 </aside>
 
 <!-- Main chat -->
 <div id="main">
   <div id="topbar">
-    <div class="logo">🤖</div>
+    <div class="logo">&#129302;</div>
     <h1>Enterprise AI Assistant</h1>
-    <span class="subtitle">RAG · Gemini · pgvector</span>
+    <span class="subtitle">RAG &middot; Gemini &middot; pgvector</span>
   </div>
 
   <div id="chat-area">
     <div id="welcome">
       <h2>Ask your documents anything</h2>
-      <p>Upload documents via <a href="/docs#/Documents" target="_blank" style="color:var(--accent)">the API</a>, then ask questions below. The assistant searches your knowledge base and generates grounded answers.</p>
+      <p>Upload documents in the sidebar, then ask questions below. The assistant searches your knowledge base and generates grounded answers.</p>
     </div>
   </div>
 
@@ -424,31 +699,199 @@
         id="question-input"
         rows="1"
         maxlength="1000"
-        placeholder="Ask a question about your documents…"
+        placeholder="Ask a question about your documents&hellip;"
       ></textarea>
       <button id="send-btn">Ask</button>
     </div>
-    <div id="input-hint">Enter to send · Shift+Enter for new line · max 1000 chars</div>
+    <div id="input-hint">Enter to send &middot; Shift+Enter for new line &middot; max 1000 chars</div>
   </div>
 </div>
 
 <script>
   const API_BASE = window.location.origin;
-  const chatArea = document.getElementById('chat-area');
-  const welcomeEl = document.getElementById('welcome');
-  const input = document.getElementById('question-input');
-  const sendBtn = document.getElementById('send-btn');
-  const topkInput = document.getElementById('topk-input');
-  const historyList = document.getElementById('history-list');
-  const historyEmpty = document.getElementById('history-empty');
 
-  // ── Auto-resize textarea ──
+  // ── DOM refs ──
+  const chatArea      = document.getElementById('chat-area');
+  const welcomeEl     = document.getElementById('welcome');
+  const input         = document.getElementById('question-input');
+  const sendBtn       = document.getElementById('send-btn');
+  const topkInput     = document.getElementById('topk-input');
+  const historyList   = document.getElementById('history-list');
+  const historyEmpty  = document.getElementById('history-empty');
+  const dropZone      = document.getElementById('drop-zone');
+  const fileInput     = document.getElementById('file-input');
+  const uploadStatus  = document.getElementById('upload-status');
+  const uploadMsg     = document.getElementById('upload-msg');
+  const docList       = document.getElementById('doc-list');
+  const docEmpty      = document.getElementById('doc-empty');
+  const docCountBadge = document.getElementById('doc-count');
+
+  // =============================================
+  //  DOCUMENT UPLOAD
+  // =============================================
+
+  // Click to browse
+  dropZone.addEventListener('click', () => fileInput.click());
+
+  // Drag & drop events
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+  });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length > 0) {
+      uploadFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  // File picker change
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+      uploadFile(fileInput.files[0]);
+      fileInput.value = '';
+    }
+  });
+
+  async function uploadFile(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext !== 'pdf' && ext !== 'txt') {
+      showUploadStatus('Only .pdf and .txt files are supported.', 'error');
+      return;
+    }
+
+    showUploadStatus(`Uploading ${file.name}...`, 'loading');
+
+    const form = new FormData();
+    form.append('file', file);
+
+    try {
+      const res = await fetch(`${API_BASE}/documents/upload`, {
+        method: 'POST',
+        body: form,
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showUploadStatus(data.detail || 'Upload failed.', 'error');
+      } else {
+        const doc = data.document;
+        showUploadStatus(`${doc.filename} uploaded (${doc.chunk_count} chunks)`, 'success');
+        loadDocuments();
+      }
+    } catch (err) {
+      showUploadStatus('Could not reach server.', 'error');
+    }
+  }
+
+  function showUploadStatus(msg, type) {
+    uploadStatus.className = 'visible';
+    uploadStatus.classList.remove('error', 'success');
+    uploadMsg.textContent = msg;
+
+    const spinner = uploadStatus.querySelector('.upload-spinner');
+
+    if (type === 'loading') {
+      spinner.style.display = 'block';
+    } else {
+      spinner.style.display = 'none';
+      uploadStatus.classList.add(type);
+      // Auto-hide success/error after 4s
+      setTimeout(() => { uploadStatus.className = ''; }, 4000);
+    }
+  }
+
+  // =============================================
+  //  DOCUMENT LIST
+  // =============================================
+
+  async function loadDocuments() {
+    try {
+      const res = await fetch(`${API_BASE}/documents/`);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      docCountBadge.textContent = data.count;
+
+      if (data.count === 0) {
+        docEmpty.style.display = 'block';
+        docList.querySelectorAll('.doc-item').forEach(el => el.remove());
+        return;
+      }
+
+      docEmpty.style.display = 'none';
+      // Clear old items
+      docList.querySelectorAll('.doc-item').forEach(el => el.remove());
+
+      data.documents.forEach(doc => {
+        const el = document.createElement('div');
+        el.className = 'doc-item';
+        el.innerHTML = `
+          <div class="doc-icon ${doc.file_type}">${doc.file_type}</div>
+          <div class="doc-info">
+            <div class="doc-name" title="${escHtml(doc.filename)}">${escHtml(doc.filename)}</div>
+            <div class="doc-meta">${doc.chunk_count} chunks</div>
+          </div>
+          <button class="doc-delete" title="Delete document">&times;</button>
+        `;
+
+        el.querySelector('.doc-delete').addEventListener('click', (e) => {
+          e.stopPropagation();
+          confirmDeleteDocument(doc.id, doc.filename);
+        });
+
+        docList.appendChild(el);
+      });
+    } catch (_) {
+      // non-critical
+    }
+  }
+
+  function confirmDeleteDocument(docId, filename) {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <p>Delete this document?</p>
+        <div class="confirm-name">${escHtml(filename)}</div>
+        <div class="confirm-btns">
+          <button class="btn-cancel">Cancel</button>
+          <button class="btn-delete">Delete</button>
+        </div>
+      </div>
+    `;
+
+    overlay.querySelector('.btn-cancel').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.remove();
+    });
+
+    overlay.querySelector('.btn-delete').addEventListener('click', async () => {
+      overlay.remove();
+      try {
+        const res = await fetch(`${API_BASE}/documents/${docId}`, { method: 'DELETE' });
+        if (res.ok) {
+          loadDocuments();
+        }
+      } catch (_) {}
+    });
+
+    document.body.appendChild(overlay);
+  }
+
+  // =============================================
+  //  CHAT — QUESTION / ANSWER
+  // =============================================
+
   input.addEventListener('input', () => {
     input.style.height = 'auto';
     input.style.height = Math.min(input.scrollHeight, 140) + 'px';
   });
 
-  // ── Enter to send ──
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -458,7 +901,6 @@
 
   sendBtn.addEventListener('click', submitQuestion);
 
-  // ── Submit ──
   async function submitQuestion() {
     const question = input.value.trim();
     if (!question || sendBtn.disabled) return;
@@ -503,7 +945,7 @@
 
   function setLoading(on) {
     sendBtn.disabled = on;
-    sendBtn.textContent = on ? '…' : 'Ask';
+    sendBtn.textContent = on ? '\u2026' : 'Ask';
   }
 
   function appendQuestion(text) {
@@ -518,7 +960,7 @@
   function appendSpinner() {
     const el = document.createElement('div');
     el.className = 'spinner-wrap';
-    el.innerHTML = `<div class="spinner"></div><span>Thinking…</span>`;
+    el.innerHTML = `<div class="spinner"></div><span>Thinking\u2026</span>`;
     chatArea.appendChild(el);
     scrollBottom();
     return el;
@@ -528,22 +970,19 @@
     const group = document.createElement('div');
     group.className = 'msg-answer-wrap';
 
-    // Answer text
     const answer = document.createElement('div');
     answer.className = 'msg-answer';
     answer.textContent = data.answer;
     group.appendChild(answer);
 
-    // Meta row
     const meta = document.createElement('div');
     meta.className = 'msg-meta';
     meta.innerHTML = `
-      <span class="timing">⚡ ${(data.response_time_ms / 1000).toFixed(2)}s</span>
+      <span class="timing">\u26A1 ${(data.response_time_ms / 1000).toFixed(2)}s</span>
       <span>${data.sources.length} source${data.sources.length !== 1 ? 's' : ''} used</span>
     `;
     group.appendChild(meta);
 
-    // Sources toggle
     if (data.sources && data.sources.length > 0) {
       const toggle = document.createElement('button');
       toggle.className = 'sources-toggle';
@@ -552,7 +991,7 @@
       const panel = document.createElement('div');
       panel.className = 'sources-panel';
 
-      data.sources.forEach((src, i) => {
+      data.sources.forEach((src) => {
         const card = document.createElement('div');
         card.className = 'source-card';
         card.innerHTML = `
@@ -597,7 +1036,10 @@
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  // ── History sidebar ──
+  // =============================================
+  //  HISTORY SIDEBAR
+  // =============================================
+
   async function loadHistory() {
     try {
       const res = await fetch(`${API_BASE}/query/history?limit=30`);
@@ -635,11 +1077,12 @@
         historyList.appendChild(el);
       });
     } catch (_) {
-      // history is non-critical; silent fail
+      // non-critical
     }
   }
 
-  // Load history on page open
+  // ── Load on startup ──
+  loadDocuments();
   loadHistory();
 </script>
 </body>
