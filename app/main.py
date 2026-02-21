@@ -49,6 +49,10 @@ app = FastAPI(
 # In Spring Boot, JPA does this with spring.jpa.hibernate.ddl-auto=update
 # Here we do it explicitly — wrapped so a DB outage doesn't crash the server
 try:
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        conn.commit()
     Base.metadata.create_all(bind=engine)
 except Exception as e:
     logger.warning("Could not create DB tables at startup: %s", e)
