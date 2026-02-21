@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: enterprise_assistant
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Start server
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/enterprise_assistant
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 10
+
+      - name: Health check
+        run: |
+          curl -f http://localhost:8000/health/ || exit 1
+          echo "Health check passed"
+
+      - name: Database health check
+        run: |
+          curl -f http://localhost:8000/health/db || exit 1
+          echo "Database health check passed"
+
+      - name: API docs reachable
+        run: |
+          curl -f http://localhost:8000/docs || exit 1
+          echo "API docs reachable"
+
+      - name: Build Docker image
+        run: docker build -t enterprise-ai-assistant .
