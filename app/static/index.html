@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enterprise AI Assistant</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3250;
+      --accent: #6c63ff;
+      --accent-hover: #5a52e0;
+      --text: #e8eaf6;
+      --text-muted: #8b90b0;
+      --success: #4caf7d;
+      --danger: #e05c5c;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #sidebar-header h2 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    #history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    #history-list::-webkit-scrollbar { width: 4px; }
+    #history-list::-webkit-scrollbar-track { background: transparent; }
+    #history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .history-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 2px;
+    }
+
+    .history-item:hover { background: var(--surface2); }
+
+    .history-item .q {
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+
+    .history-item .ts {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    #history-empty {
+      padding: 20px 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* ── Main ── */
+    #main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #topbar {
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #topbar .logo {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    #topbar h1 {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    #topbar .subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    /* ── Chat area ── */
+    #chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 10%;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    #chat-area::-webkit-scrollbar { width: 4px; }
+    #chat-area::-webkit-scrollbar-track { background: transparent; }
+    #chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    #welcome {
+      text-align: center;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    #welcome h2 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    #welcome p {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 440px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── Message bubbles ── */
+    .msg-group { display: flex; flex-direction: column; gap: 12px; }
+
+    .msg-question {
+      align-self: flex-end;
+      background: var(--accent);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: var(--radius) var(--radius) 4px var(--radius);
+      max-width: 72%;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .msg-answer-wrap {
+      align-self: flex-start;
+      max-width: 82%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg-answer {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 16px 20px;
+      border-radius: var(--radius) var(--radius) var(--radius) 4px;
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .msg-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 16px;
+      padding: 0 4px;
+    }
+
+    .msg-meta .timing { color: var(--success); }
+
+    /* ── Sources ── */
+    .sources-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+      align-self: flex-start;
+    }
+
+    .sources-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .sources-panel {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sources-panel.open { display: flex; }
+
+    .source-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+    }
+
+    .source-card .source-meta {
+      display: flex;
+      gap: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .source-card .source-meta span {
+      background: var(--surface);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .source-card .source-score {
+      color: var(--success);
+    }
+
+    .source-card .source-content {
+      color: var(--text);
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ── Error ── */
+    .msg-error {
+      align-self: flex-start;
+      background: rgba(224, 92, 92, 0.12);
+      border: 1px solid rgba(224, 92, 92, 0.35);
+      color: #f08080;
+      padding: 12px 18px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      max-width: 72%;
+    }
+
+    /* ── Spinner ── */
+    .spinner-wrap {
+      align-self: flex-start;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-muted);
+      font-size: 13px;
+      padding: 4px 0;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Input bar ── */
+    #input-area {
+      padding: 20px 10%;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    #input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    #question-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 14px;
+      padding: 12px 16px;
+      resize: none;
+      outline: none;
+      font-family: inherit;
+      line-height: 1.5;
+      max-height: 140px;
+      transition: border-color 0.15s;
+    }
+
+    #question-input:focus { border-color: var(--accent); }
+    #question-input::placeholder { color: var(--text-muted); }
+
+    #send-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      flex-shrink: 0;
+      height: 46px;
+    }
+
+    #send-btn:hover:not(:disabled) { background: var(--accent-hover); }
+    #send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #input-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      text-align: right;
+    }
+
+    /* ── Top-k selector ── */
+    #topk-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    #topk-row label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    #topk-input {
+      width: 52px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      padding: 4px 8px;
+      outline: none;
+      text-align: center;
+    }
+
+    #topk-input:focus { border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar: query history -->
+<aside id="sidebar">
+  <div id="sidebar-header">
+    <h2>Query History</h2>
+  </div>
+  <div id="history-list">
+    <div id="history-empty">No queries yet</div>
+  </div>
+</aside>
+
+<!-- Main chat -->
+<div id="main">
+  <div id="topbar">
+    <div class="logo">🤖</div>
+    <h1>Enterprise AI Assistant</h1>
+    <span class="subtitle">RAG · Gemini · pgvector</span>
+  </div>
+
+  <div id="chat-area">
+    <div id="welcome">
+      <h2>Ask your documents anything</h2>
+      <p>Upload documents via <a href="/docs#/Documents" target="_blank" style="color:var(--accent)">the API</a>, then ask questions below. The assistant searches your knowledge base and generates grounded answers.</p>
+    </div>
+  </div>
+
+  <div id="input-area">
+    <div id="topk-row">
+      <label for="topk-input">Sources to retrieve:</label>
+      <input id="topk-input" type="number" value="5" min="1" max="20" />
+    </div>
+    <div id="input-row">
+      <textarea
+        id="question-input"
+        rows="1"
+        maxlength="1000"
+        placeholder="Ask a question about your documents…"
+      ></textarea>
+      <button id="send-btn">Ask</button>
+    </div>
+    <div id="input-hint">Enter to send · Shift+Enter for new line · max 1000 chars</div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = window.location.origin;
+  const chatArea = document.getElementById('chat-area');
+  const welcomeEl = document.getElementById('welcome');
+  const input = document.getElementById('question-input');
+  const sendBtn = document.getElementById('send-btn');
+  const topkInput = document.getElementById('topk-input');
+  const historyList = document.getElementById('history-list');
+  const historyEmpty = document.getElementById('history-empty');
+
+  // ── Auto-resize textarea ──
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 140) + 'px';
+  });
+
+  // ── Enter to send ──
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submitQuestion();
+    }
+  });
+
+  sendBtn.addEventListener('click', submitQuestion);
+
+  // ── Submit ──
+  async function submitQuestion() {
+    const question = input.value.trim();
+    if (!question || sendBtn.disabled) return;
+
+    const topK = Math.min(20, Math.max(1, parseInt(topkInput.value, 10) || 5));
+
+    hideWelcome();
+    appendQuestion(question);
+    const spinnerEl = appendSpinner();
+    setLoading(true);
+    input.value = '';
+    input.style.height = 'auto';
+
+    try {
+      const res = await fetch(`${API_BASE}/query/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, top_k: topK }),
+      });
+
+      const data = await res.json();
+      spinnerEl.remove();
+
+      if (!res.ok) {
+        appendError(data.detail || 'An error occurred.');
+      } else {
+        appendAnswer(data);
+        loadHistory();
+      }
+    } catch (err) {
+      spinnerEl.remove();
+      appendError('Could not reach the server. Is it running?');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ── DOM helpers ──
+  function hideWelcome() {
+    if (welcomeEl) welcomeEl.style.display = 'none';
+  }
+
+  function setLoading(on) {
+    sendBtn.disabled = on;
+    sendBtn.textContent = on ? '…' : 'Ask';
+  }
+
+  function appendQuestion(text) {
+    const el = document.createElement('div');
+    el.className = 'msg-group';
+    el.innerHTML = `<div class="msg-question">${escHtml(text)}</div>`;
+    chatArea.appendChild(el);
+    scrollBottom();
+    return el;
+  }
+
+  function appendSpinner() {
+    const el = document.createElement('div');
+    el.className = 'spinner-wrap';
+    el.innerHTML = `<div class="spinner"></div><span>Thinking…</span>`;
+    chatArea.appendChild(el);
+    scrollBottom();
+    return el;
+  }
+
+  function appendAnswer(data) {
+    const group = document.createElement('div');
+    group.className = 'msg-answer-wrap';
+
+    // Answer text
+    const answer = document.createElement('div');
+    answer.className = 'msg-answer';
+    answer.textContent = data.answer;
+    group.appendChild(answer);
+
+    // Meta row
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    meta.innerHTML = `
+      <span class="timing">⚡ ${(data.response_time_ms / 1000).toFixed(2)}s</span>
+      <span>${data.sources.length} source${data.sources.length !== 1 ? 's' : ''} used</span>
+    `;
+    group.appendChild(meta);
+
+    // Sources toggle
+    if (data.sources && data.sources.length > 0) {
+      const toggle = document.createElement('button');
+      toggle.className = 'sources-toggle';
+      toggle.textContent = `Show sources (${data.sources.length})`;
+
+      const panel = document.createElement('div');
+      panel.className = 'sources-panel';
+
+      data.sources.forEach((src, i) => {
+        const card = document.createElement('div');
+        card.className = 'source-card';
+        card.innerHTML = `
+          <div class="source-meta">
+            <span>Doc #${src.document_id}</span>
+            <span>Chunk ${src.chunk_index}</span>
+            <span class="source-score">Score: ${src.similarity_score.toFixed(3)}</span>
+          </div>
+          <div class="source-content">${escHtml(src.content)}</div>
+        `;
+        panel.appendChild(card);
+      });
+
+      toggle.addEventListener('click', () => {
+        const open = panel.classList.toggle('open');
+        toggle.textContent = open
+          ? `Hide sources (${data.sources.length})`
+          : `Show sources (${data.sources.length})`;
+      });
+
+      group.appendChild(toggle);
+      group.appendChild(panel);
+    }
+
+    chatArea.appendChild(group);
+    scrollBottom();
+  }
+
+  function appendError(msg) {
+    const el = document.createElement('div');
+    el.className = 'msg-error';
+    el.textContent = `Error: ${msg}`;
+    chatArea.appendChild(el);
+    scrollBottom();
+  }
+
+  function scrollBottom() {
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── History sidebar ──
+  async function loadHistory() {
+    try {
+      const res = await fetch(`${API_BASE}/query/history?limit=30`);
+      if (!res.ok) return;
+      const items = await res.json();
+
+      if (items.length === 0) {
+        historyEmpty.style.display = 'block';
+        return;
+      }
+
+      historyEmpty.style.display = 'none';
+      historyList.innerHTML = '';
+
+      items.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'history-item';
+        const ts = new Date(item.created_at).toLocaleString([], {
+          month: 'short', day: 'numeric',
+          hour: '2-digit', minute: '2-digit',
+        });
+        el.innerHTML = `
+          <div class="q">${escHtml(item.question)}</div>
+          <div class="ts">${ts}</div>
+        `;
+        el.addEventListener('click', () => {
+          hideWelcome();
+          appendQuestion(item.question);
+          appendAnswer({
+            answer: item.answer || '(no answer recorded)',
+            response_time_ms: 0,
+            sources: [],
+          });
+        });
+        historyList.appendChild(el);
+      });
+    } catch (_) {
+      // history is non-critical; silent fail
+    }
+  }
+
+  // Load history on page open
+  loadHistory();
+</script>
+</body>
+</html>

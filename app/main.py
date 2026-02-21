@@ -18,6 +18,7 @@ in Spring Boot, but with zero configuration.
 import logging
 from pathlib import Path
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.database import engine, Base
 
@@ -56,6 +57,10 @@ except Exception as e:
 app.include_router(health_router)
 app.include_router(documents_router)
 app.include_router(query_router)
+
+# Serve the frontend chat UI at /ui/
+# StaticFiles requires the aiofiles package
+app.mount("/ui", StaticFiles(directory="app/static", html=True), name="static")
 
 
 # Root endpoint — a simple welcome message
