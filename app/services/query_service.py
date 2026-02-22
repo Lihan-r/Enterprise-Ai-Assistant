@@ -18,6 +18,7 @@ import logging
 import time
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.services.embedding_service import embedding_service
 from app.services.retrieval_service import retrieval_service
 from app.services.gemini_service import gemini_service
@@ -69,6 +70,26 @@ class QueryService:
                     f"chunk_index={chunk['chunk_index']}]\n{chunk['content']}"
                 )
             context = "\n\n---\n\n".join(context_parts)
+
+            max_chars = settings.gemini_max_context_chars
+            if len(context) > max_chars:
+                original_len = len(context)
+                truncated = context[:max_chars]
+                # Find the last sentence boundary within the limit
+                last_boundary = max(
+                    truncated.rfind("."),
+                    truncated.rfind("!"),
+                    truncated.rfind("?"),
+                )
+                if last_boundary > 0:
+                    truncated = truncated[: last_boundary + 1]
+                context = truncated
+                logger.warning(
+                    "Context truncated from %d to %d chars (max_context_chars=%d)",
+                    original_len,
+                    len(context),
+                    max_chars,
+                )
 
             answer = gemini_service.generate_with_context(question, context)
 

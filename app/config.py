@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # Gemini — no default, so the app fails fast if the key is missing
     gemini_api_key: str
     gemini_model: str = "gemini-2.5-flash"
+    gemini_temperature: float = 0.3
+    gemini_max_output_tokens: int = 1024
+    gemini_max_context_chars: int = 8000
 
     # Security — empty api_key means auth is disabled (dev convenience)
     api_key: str = ""

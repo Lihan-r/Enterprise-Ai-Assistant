@@ -9,10 +9,14 @@ If you ever want to swap Gemini for OpenAI or Hugging Face,
 you only change this one file.
 """
 
+import logging
+
 import google.generativeai as genai
 from google.api_core.exceptions import GoogleAPIError
 from fastapi import HTTPException
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class GeminiService:
@@ -44,7 +48,20 @@ class GeminiService:
         type in Java. It's optional but good practice.
         """
         try:
-            response = self.model.generate_content(prompt)
+            response = self.model.generate_content(
+                prompt,
+                generation_config={
+                    "temperature": settings.gemini_temperature,
+                    "max_output_tokens": settings.gemini_max_output_tokens,
+                },
+            )
+            if response.usage_metadata:
+                logger.info(
+                    "Gemini tokens — prompt: %d, response: %d, total: %d",
+                    response.usage_metadata.prompt_token_count,
+                    response.usage_metadata.candidates_token_count,
+                    response.usage_metadata.total_token_count,
+                )
             return response.text
         except GoogleAPIError as e:
             raise HTTPException(status_code=502, detail=f"Gemini API error: {e}")
