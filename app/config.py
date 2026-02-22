@@ -26,6 +26,14 @@ class Settings(BaseSettings):
     # Gemini — no default, so the app fails fast if the key is missing
     gemini_api_key: str
 
+    # Security — empty api_key means auth is disabled (dev convenience)
+    api_key: str = ""
+    cors_origins: str = "http://localhost:8000,http://localhost:8001"
+
+    # Rate limiting
+    rate_limit_default: str = "30/minute"
+    rate_limit_query: str = "10/minute"  # tighter for expensive Gemini calls
+
     model_config = {
         "env_file": ".env",
     }

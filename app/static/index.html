@@ -309,8 +309,34 @@
     #topbar .subtitle {
       font-size: 13px;
       color: var(--text-muted);
-      margin-left: auto;
     }
+
+    #api-key-group {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #api-key-group label {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    #api-key-input {
+      width: 180px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 12px;
+      padding: 6px 10px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    #api-key-input:focus { border-color: var(--accent); }
 
     /* ── Chat area ── */
     #chat-area {
@@ -680,6 +706,10 @@
     <div class="logo">&#129302;</div>
     <h1>Enterprise AI Assistant</h1>
     <span class="subtitle">RAG &middot; Gemini &middot; pgvector</span>
+    <div id="api-key-group">
+      <label for="api-key-input">API Key</label>
+      <input id="api-key-input" type="password" placeholder="if required" />
+    </div>
   </div>
 
   <div id="chat-area">
@@ -709,6 +739,22 @@
 
 <script>
   const API_BASE = window.location.origin;
+
+  // ── API key helpers ──
+  const apiKeyInput = document.getElementById('api-key-input');
+
+  // Restore persisted key
+  apiKeyInput.value = localStorage.getItem('api_key') || '';
+  apiKeyInput.addEventListener('input', () => {
+    localStorage.setItem('api_key', apiKeyInput.value);
+  });
+
+  function apiHeaders(extra = {}) {
+    const headers = { ...extra };
+    const key = apiKeyInput.value.trim();
+    if (key) headers['X-API-Key'] = key;
+    return headers;
+  }
 
   // ── DOM refs ──
   const chatArea      = document.getElementById('chat-area');
@@ -772,6 +818,7 @@
     try {
       const res = await fetch(`${API_BASE}/documents/upload`, {
         method: 'POST',
+        headers: apiHeaders(),
         body: form,
       });
       const data = await res.json();
@@ -811,7 +858,7 @@
 
   async function loadDocuments() {
     try {
-      const res = await fetch(`${API_BASE}/documents/`);
+      const res = await fetch(`${API_BASE}/documents/`, { headers: apiHeaders() });
       if (!res.ok) return;
       const data = await res.json();
 
@@ -873,7 +920,7 @@
     overlay.querySelector('.btn-delete').addEventListener('click', async () => {
       overlay.remove();
       try {
-        const res = await fetch(`${API_BASE}/documents/${docId}`, { method: 'DELETE' });
+        const res = await fetch(`${API_BASE}/documents/${docId}`, { method: 'DELETE', headers: apiHeaders() });
         if (res.ok) {
           loadDocuments();
         }
@@ -917,7 +964,7 @@
     try {
       const res = await fetch(`${API_BASE}/query/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: apiHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ question, top_k: topK }),
       });
 
@@ -1042,7 +1089,7 @@
 
   async function loadHistory() {
     try {
-      const res = await fetch(`${API_BASE}/query/history?limit=30`);
+      const res = await fetch(`${API_BASE}/query/history?limit=30`, { headers: apiHeaders() });
       if (!res.ok) return;
       const items = await res.json();
 

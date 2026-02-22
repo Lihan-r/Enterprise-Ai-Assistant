@@ -13,10 +13,12 @@ Security notes:
 """
 
 import logging
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
+from app.dependencies import limiter
 from app.schemas.query import QueryRequest, QueryResponse, QueryHistoryItem
 from app.services.query_service import query_service
 from app.models.query_log import QueryLog
@@ -27,18 +29,21 @@ router = APIRouter(prefix="/query", tags=["Query"])
 
 
 @router.post("/", response_model=QueryResponse)
-def ask_question(request: QueryRequest, db: Session = Depends(get_db)):
+@limiter.limit(settings.rate_limit_query)
+def ask_question(request: Request, body: QueryRequest, db: Session = Depends(get_db)):
     """
     Submit a question and receive an AI-generated answer grounded in
     uploaded documents.
 
     - **question**: 1–1000 characters.
     - **top_k**: number of document chunks to retrieve (1–20, default 5).
+
+    Rate-limited to protect the expensive embedding + Gemini pipeline.
     """
     result = query_service.answer_question(
-        question=request.question,
+        question=body.question,
         db=db,
-        top_k=request.top_k,
+        top_k=body.top_k,
     )
     return result
 

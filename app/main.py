@@ -17,10 +17,15 @@ in Spring Boot, but with zero configuration.
 
 import logging
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from app.config import settings
 from app.database import engine, Base
+from app.dependencies import limiter, require_api_key
+from app.middleware.logging import LoggingMiddleware
 
 # IMPORTANT: all models must be imported before Base.metadata.create_all()
 # so SQLAlchemy knows about them and creates their tables.
@@ -45,6 +50,22 @@ app = FastAPI(
     description="AI-powered assistant that answers internal company questions using RAG.",
 )
 
+# Attach limiter to app state (slowapi convention)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# CORS — allow the configured origins and the X-API-Key header
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[o.strip() for o in settings.cors_origins.split(",")],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Request/response access logging
+app.add_middleware(LoggingMiddleware)
+
 # Create database tables on startup
 # In Spring Boot, JPA does this with spring.jpa.hibernate.ddl-auto=update
 # Here we do it explicitly — wrapped so a DB outage doesn't crash the server
@@ -58,9 +79,10 @@ except Exception as e:
     logger.warning("Could not create DB tables at startup: %s", e)
 
 # Register routers (like @ComponentScan finding your @RestControllers)
+# Health stays public (Docker healthchecks); documents & query require auth
 app.include_router(health_router)
-app.include_router(documents_router)
-app.include_router(query_router)
+app.include_router(documents_router, dependencies=[Depends(require_api_key)])
+app.include_router(query_router, dependencies=[Depends(require_api_key)])
 
 # Serve the frontend chat UI at /ui/
 # StaticFiles requires the aiofiles package
