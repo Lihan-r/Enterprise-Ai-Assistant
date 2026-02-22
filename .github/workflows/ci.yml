@@ -26,6 +26,12 @@ jobs:
           --health-retries 5
 
     steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          docker system prune -af
+          df -h
+
       - uses: actions/checkout@v4
 
       - name: Set up Python
