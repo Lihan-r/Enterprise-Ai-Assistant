@@ -27,9 +27,8 @@ class GeminiService:
         # Configure the API key
         genai.configure(api_key=settings.gemini_api_key)
 
-        # Initialize the model
-        # gemini-2.0-flash-lite has a more generous free tier quota
-        self.model = genai.GenerativeModel("gemini-2.0-flash-lite")
+        # Initialize the model (configurable via GEMINI_MODEL in .env)
+        self.model = genai.GenerativeModel(settings.gemini_model)
 
     def generate_response(self, prompt: str) -> str:
         """
